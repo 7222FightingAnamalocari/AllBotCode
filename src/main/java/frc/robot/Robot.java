@@ -120,6 +120,15 @@ public class Robot extends TimedRobot {
        switch (m_autoSelected) {
       case kCustomAuto:
         // Put custom auto code here
+
+        left.set(-.5);
+        right.set(-.5);
+        wait(5000);
+        left.set(0);
+        right.set(0);
+        wait(5000);
+      
+
         break;
       case kDefaultAuto:
       default:
@@ -127,6 +136,8 @@ public class Robot extends TimedRobot {
         break;
     }
   }
+
+
 
   /**
    * This function is called periodically during operator control.
