@@ -7,122 +7,159 @@
 
 package frc.robot;
 
-import edu.wpi.first.wpilibj.*;
+import org.opencv.core.Mat;
+import org.opencv.imgproc.Imgproc;
+
+
+import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
+import edu.wpi.first.cameraserver.CameraServer;
+import edu.wpi.cscore.CvSink;
+import edu.wpi.cscore.CvSource;
+import edu.wpi.cscore.UsbCamera;
+import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.Spark;
+import edu.wpi.first.wpilibj.SpeedControllerGroup;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.Servo;
+
 
 /**
  * The VM is configured to automatically run this class, and to call the
- * methods corresponding to each mode, as described in the TimedRobot
+ * functions corresponding to each mode, as described in the TimedRobot
  * documentation. If you change the name of this class or the package after
  * creating this project, you must also update the build.gradle file in the
  * project.
  */
-public class Robot extends TimedRobot
-{
-    private static final String DEFAULT_AUTO = "Default";
-    private static final String CUSTOM_AUTO = "My Auto";
-    private String autoSelected;
-    private final SendableChooser<String> chooser = new SendableChooser<>();
+public class Robot extends TimedRobot {
+  private static final String kDefaultAuto = "Default";
+  private static final String kCustomAuto = "My Auto";
+  private String m_autoSelected;
+  private final SendableChooser<String> m_chooser = new SendableChooser<>();
 
-    private Timer timer = new Timer();
+  int joystick_ = 0;
+  Joystick joystick = new Joystick(joystick_);
+  Spark m_RF = new Spark(2);
+  Spark m_LF = new Spark(1);
+  Spark m_RR = new Spark(4);
+  Spark m_LR = new Spark(3);
+  Spark m_test = new Spark(6);
 
-    private Joystick stick = new Joystick(0);
+  Servo mServo = new Servo(5);
 
-    private Spark lBackS = new Spark(0);
-    private Spark lFrontS = new Spark(1);
-    private Spark rBackS = new Spark(2);
-    private Spark rFrontS = new Spark(3);
+  SpeedControllerGroup right = new SpeedControllerGroup(m_RF, m_RR);
+  SpeedControllerGroup left = new SpeedControllerGroup(m_LF, m_LR);
 
-    private SpeedControllerGroup leftG = new SpeedControllerGroup(lBackS,lFrontS);
-    private SpeedControllerGroup rightG = new SpeedControllerGroup(rBackS, rFrontS);
+  DifferentialDrive drive = new DifferentialDrive(left, right);
 
-    private DifferentialDrive drive = new DifferentialDrive(leftG, rightG);
 
-    /**
-     * This method is run when the robot is first started up and should be
-     * used for any initialization code.
-     */
-    @Override
-    public void robotInit()
-    {
-        chooser.setDefaultOption("Default Auto", DEFAULT_AUTO);
-        chooser.addOption("My Auto", CUSTOM_AUTO);
-        SmartDashboard.putData("Auto choices", chooser);
-        leftG.setInverted(true);
+  /**
+   * This function is run when the robot is first started up and should be
+   * used for any initialization code.
+   */
+  @Override
+  public void robotInit() {
+    m_chooser.setDefaultOption("Default Auto", kDefaultAuto);
+    m_chooser.addOption("My Auto", kCustomAuto);
+    SmartDashboard.putData("Auto choices", m_chooser);
+    new Thread(() -> {
+      UsbCamera camera = CameraServer.getInstance().startAutomaticCapture(0);
+      camera.setResolution(320, 240);
+
+      CvSink cvSink = CameraServer.getInstance().getVideo();
+      CvSource outputStream = CameraServer.getInstance().putVideo("cam0", 320, 240);
+
+      Mat source = new Mat();
+      Mat output = new Mat();
+      while (!Thread.interrupted()) {
+        cvSink.grabFrame(source);
+        Imgproc.cvtColor(source, output, Imgproc.COLOR_BGR2GRAY);
+        outputStream.putFrame(output);
+      }
+    });
+       left.setInverted(true);
+  }
+
+  /**
+   * This function is called every robot packet, no matter the mode. Use
+   * this for items like diagnostics that you want ran during disabled,
+   * autonomous, teleoperated and test.
+   *
+   * <p>This runs after the mode specific periodic functions, but before
+   * LiveWindow and SmartDashboard integrated updating.
+   */
+  @Override
+  public void robotPeriodic() {
+  }
+
+  /**
+   * This autonomous (along with the chooser code above) shows how to select
+   * between different autonomous modes using the dashboard. The sendable
+   * chooser code works with the Java SmartDashboard. If you prefer the
+   * LabVIEW Dashboard, remove all of the chooser code and uncomment the
+   * getString line to get the auto name from the text box below the Gyro
+   *
+   * <p>You can add additional auto modes by adding additional comparisons to
+   * the switch structure below with additional strings. If using the
+   * SendableChooser make sure to add them to the chooser code above as well.
+   */
+  @Override
+  public void autonomousInit() {
+    m_autoSelected = m_chooser.getSelected();
+    // m_autoSelected = SmartDashboard.getString("Auto Selector", kDefaultAuto);
+    System.out.println("Auto selected: " + m_autoSelected);
+  }
+
+  /**
+   * This function is called periodically during autonomous.
+   */
+  @Override
+  public void autonomousPeriodic() {
+       switch (m_autoSelected) {
+      case kCustomAuto:
+        // Put custom auto code here
+        break;
+      case kDefaultAuto:
+      default:
+        // Put default auto code here
+        break;
     }
+  }
 
-    /**
-     * This method is called every robot packet, no matter the mode. Use
-     * this for items like diagnostics that you want ran during disabled,
-     * autonomous, teleoperated and test.
-     * <p>
-     * This runs after the mode specific periodic methods, but before
-     * LiveWindow and SmartDashboard integrated updating.
-     */
-    @Override
-    public void robotPeriodic()
-    {
-    }
+  /**
+   * This function is called periodically during operator control.
+   */
+  @Override
+  public void teleopPeriodic() {
+     
+   drive.arcadeDrive(joystick.getRawAxis(1), joystick.getRawAxis(0));
+   while(joystick.getRawButtonPressed(5)){
+  m_test.set(1);
+  }
+  if(joystick.getRawButtonReleased(5)) {
+   m_test.set(0);
+  }
+  while(joystick.getRawButtonPressed(3)){
+    m_test.set(-1);
+  }if(joystick.getRawButtonReleased(3)){
+    m_test.set(0);
+  }
+  while(joystick.getRawButtonPressed(6)){
+    mServo.set(0.5);
+  }
+  while(joystick.getRawButtonPressed(4)){
+    mServo.set(0.1);
+  }
+  
 
-    /**
-     * This autonomous (along with the chooser code above) shows how to select
-     * between different autonomous modes using the dashboard. The sendable
-     * chooser code works with the Java SmartDashboard. If you prefer the
-     * LabVIEW Dashboard, remove all of the chooser code and uncomment the
-     * getString line to get the auto name from the text box below the Gyro
-     * <p>
-     * You can add additional auto modes by adding additional comparisons to
-     * the switch structure below with additional strings. If using the
-     * SendableChooser make sure to add them to the chooser code above as well.
-     */
-    @Override
-    public void autonomousInit() {
-        autoSelected = chooser.getSelected();
-        // autoSelected = SmartDashboard.getString("Auto Selector",
-        // defaultAuto);
-        System.out.println("Auto selected: " + autoSelected);
+}
+  
 
-        timer.reset();
-        timer.start();
-    }
-
-    /**
-     * This method is called periodically during autonomous.
-     */
-    @Override
-    public void autonomousPeriodic()
-    {
-        switch (autoSelected)
-        {
-            case CUSTOM_AUTO:
-                if(timer.get() >= 1) {
-                    drive.arcadeDrive(1,0);
-                } else {
-                    drive.arcadeDrive(0,0);
-                }
-                break;
-            case DEFAULT_AUTO:
-            default:
-                // Put default auto code here
-                break;
-        }
-    }
-
-    /**
-     * This method is called periodically during operator control.
-     */
-    @Override
-    public void teleopPeriodic() {
-        drive.arcadeDrive(stick.getX(),stick.getY());
-    }
-
-    /**
-     * This method is called periodically during test mode.
-     */
-    @Override
-    public void testPeriodic()
-    {
-    }
+  /**
+   * This function is called periodically during test mode.
+   */
+  @Override
+  public void testPeriodic() {
+  }
 }
