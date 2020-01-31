@@ -40,11 +40,11 @@ public class Robot extends TimedRobot {
 
   int joystick_ = 0;
   Joystick joystick = new Joystick(joystick_);
-  Spark m_RF = new Spark(2);
-  Spark m_LF = new Spark(1);
-  Spark m_RR = new Spark(4);
-  Spark m_LR = new Spark(3);
-  Spark m_test = new Spark(6);
+  Spark m_RF = new Spark(3);
+  Spark m_LF = new Spark(0);
+  Spark m_RR = new Spark(2);
+  Spark m_LR = new Spark(1);
+  Spark m_test = new Spark(4);
 
   Servo mServo = new Servo(5);
 
@@ -78,7 +78,8 @@ public class Robot extends TimedRobot {
         outputStream.putFrame(output);
       }
     });
-       left.setInverted(true);
+       right.setInverted(true);
+
   }
 
   /**
@@ -133,7 +134,7 @@ public class Robot extends TimedRobot {
   @Override
   public void teleopPeriodic() {
      
-   drive.arcadeDrive(joystick.getRawAxis(1), joystick.getRawAxis(0));
+   drive.arcadeDrive(joystick.getRawAxis(0), joystick.getRawAxis(1));
    while(joystick.getRawButtonPressed(5)){
   m_test.set(1);
   }
