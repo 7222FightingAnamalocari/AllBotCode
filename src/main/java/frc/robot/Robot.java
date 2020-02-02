@@ -50,6 +50,7 @@ public class Robot extends TimedRobot {
 
   SpeedControllerGroup right = new SpeedControllerGroup(m_RF, m_RR);
   SpeedControllerGroup left = new SpeedControllerGroup(m_LF, m_LR);
+  SpeedControllerGroup drip = new SpeedControllerGroup(left, right);
 
   DifferentialDrive drive = new DifferentialDrive(left, right);
 
@@ -110,6 +111,7 @@ public class Robot extends TimedRobot {
     m_autoSelected = m_chooser.getSelected();
     // m_autoSelected = SmartDashboard.getString("Auto Selector", kDefaultAuto);
     System.out.println("Auto selected: " + m_autoSelected);
+    myRobot.SetSafetyEnabled(false);
   }
 
   /**
@@ -120,14 +122,14 @@ public class Robot extends TimedRobot {
        switch (m_autoSelected) {
       case kCustomAuto:
         // Put custom auto code here
-
-        left.set(-.5);
-        right.set(-.5);
-        wait(5000);
-        left.set(0);
-        right.set(0);
-        wait(5000);
       
+
+        drip.set(.5);
+        Timer.delay(3000);
+        drip.set(0);
+
+
+        
 
         break;
       case kDefaultAuto:
@@ -135,8 +137,8 @@ public class Robot extends TimedRobot {
         // Put default auto code here
         break;
     }
+  
   }
-
 
 
   /**
