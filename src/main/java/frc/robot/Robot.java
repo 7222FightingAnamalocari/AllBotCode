@@ -10,7 +10,7 @@ package frc.robot;
 import org.opencv.core.Mat;
 import org.opencv.imgproc.Imgproc;
 
-
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.cameraserver.CameraServer;
@@ -38,6 +38,7 @@ public class Robot extends TimedRobot {
   private String m_autoSelected;
   private final SendableChooser<String> m_chooser = new SendableChooser<>();
 
+  
   int joystick_ = 0;
   Joystick joystick = new Joystick(joystick_);
   Spark m_RF = new Spark(3);
@@ -53,6 +54,8 @@ public class Robot extends TimedRobot {
   SpeedControllerGroup drip = new SpeedControllerGroup(left, right);
 
   DifferentialDrive drive = new DifferentialDrive(left, right);
+
+ 
 
 
   /**
@@ -111,7 +114,7 @@ public class Robot extends TimedRobot {
     m_autoSelected = m_chooser.getSelected();
     // m_autoSelected = SmartDashboard.getString("Auto Selector", kDefaultAuto);
     System.out.println("Auto selected: " + m_autoSelected);
-    myRobot.SetSafetyEnabled(false);
+ 
   }
 
   /**
@@ -123,11 +126,10 @@ public class Robot extends TimedRobot {
       case kCustomAuto:
         // Put custom auto code here
       
-
         drip.set(.5);
-        Timer.delay(3000);
+        Timer.delay(500);
         drip.set(0);
-
+      
 
         
 
