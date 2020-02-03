@@ -7,9 +7,15 @@
 
 package frc.robot;
 
-import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.cscore.CvSink;
+import edu.wpi.cscore.CvSource;
+import edu.wpi.cscore.UsbCamera;
+import edu.wpi.first.wpilibj.*;
+import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import org.opencv.core.Mat;
+import org.opencv.imgproc.Imgproc;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -25,6 +31,20 @@ public class Robot extends TimedRobot
     private String autoSelected;
     private final SendableChooser<String> chooser = new SendableChooser<>();
 
+    private Joystick stick = new Joystick(0);
+
+    private Spark arms = new Spark(0);
+
+    private Victor lBackV = new Victor(1);
+    private Talon lFrontT = new Talon(2);
+    private Talon rBackT = new Talon(3);
+    private Victor rFrontV = new Victor(4);
+
+    private SpeedControllerGroup leftG = new SpeedControllerGroup(lBackV, lFrontT);
+    private SpeedControllerGroup rightG = new SpeedControllerGroup(rBackT,rFrontV);
+
+    private DifferentialDrive drive = new DifferentialDrive(leftG,rightG);
+
     /**
      * This method is run when the robot is first started up and should be
      * used for any initialization code.
@@ -32,9 +52,29 @@ public class Robot extends TimedRobot
     @Override
     public void robotInit()
     {
-        chooser.setDefaultOption("Default Auto", DEFAULT_AUTO);
+    chooser.setDefaultOption("Default Auto", DEFAULT_AUTO);
         chooser.addOption("My Auto", CUSTOM_AUTO);
         SmartDashboard.putData("Auto choices", chooser);
+
+        /*
+        new Thread(() -> {
+            UsbCamera camera = CameraServer.getInstance().startAutomaticCapture();
+            camera.setResolution(640, 480);
+      
+            CvSink cvSink = CameraServer.getInstance().getVideo();
+            CvSource outputStream = CameraServer.getInstance().putVideo("cam0", 640, 480);
+      
+            Mat source = new Mat();
+            Mat output = new Mat();
+
+            while(!Thread.interrupted()) {
+                cvSink.grabFrame(source);
+                Imgproc.cvtColor(source, output, Imgproc.COLOR_BGR2GRAY);
+                outputStream.putFrame(output);
+            }
+        }).start();
+
+         */
     }
 
     /**
@@ -94,6 +134,19 @@ public class Robot extends TimedRobot
     @Override
     public void teleopPeriodic()
     {
+        new Thread(() -> {
+            if(stick.getRawButton(4) && !stick.getRawButton(2)) {
+                arms.set(.2);
+            } else {
+                arms.set(0);
+            }
+            if(stick.getRawButton(3)) {
+                arms.set(-.2);
+            } else {
+                arms.set(0);
+            }
+        }).start();
+        drive.arcadeDrive(stick.getY(),stick.getX());
     }
 
     /**
