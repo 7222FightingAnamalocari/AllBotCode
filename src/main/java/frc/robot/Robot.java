@@ -13,16 +13,19 @@ import org.opencv.imgproc.Imgproc;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
-import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.cscore.CvSink;
 import edu.wpi.cscore.CvSource;
 import edu.wpi.cscore.UsbCamera;
+import edu.wpi.first.cameraserver.CameraServer;
+import edu.wpi.first.wpilibj.IterativeRobot;
+import edu.wpi.cscore.MjpegServer;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.Spark;
 import edu.wpi.first.wpilibj.SpeedControllerGroup;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.Servo;
+
 
 
 /**
@@ -67,21 +70,26 @@ public class Robot extends TimedRobot {
     m_chooser.setDefaultOption("Default Auto", kDefaultAuto);
     m_chooser.addOption("My Auto", kCustomAuto);
     SmartDashboard.putData("Auto choices", m_chooser);
-    new Thread(() -> {
-      UsbCamera camera = CameraServer.getInstance().startAutomaticCapture(0);
-      camera.setResolution(320, 240);
-
-      CvSink cvSink = CameraServer.getInstance().getVideo();
-      CvSource outputStream = CameraServer.getInstance().putVideo("cam0", 320, 240);
-
-      Mat source = new Mat();
-      Mat output = new Mat();
-      while (!Thread.interrupted()) {
-        cvSink.grabFrame(source);
-        Imgproc.cvtColor(source, output, Imgproc.COLOR_BGR2GRAY);
-        outputStream.putFrame(output);
-      }
-    });
+      new Thread(() -> {
+        UsbCamera camera = CameraServer.getInstance().startAutomaticCapture();
+        camera.setResolution(640, 480);
+  
+        CvSink cvSink = CameraServer.getInstance().getVideo();
+        CvSource outputStream = CameraServer.getInstance().putVideo("Cam0", 640, 480);
+  
+        Mat source = new Mat();
+        Mat output = new Mat();
+  
+        while(!Thread.interrupted()) {
+          if (cvSink.grabFrame(source) == 0) {
+            continue;
+          }
+          Imgproc.cvtColor(source, output, Imgproc.COLOR_BGR2GRAY);
+          outputStream.putFrame(output);
+        }
+      }).start();
+    }
+    {
        Right.setInverted(true);
 
   }
