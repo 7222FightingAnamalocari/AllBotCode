@@ -17,8 +17,6 @@ import edu.wpi.cscore.CvSink;
 import edu.wpi.cscore.CvSource;
 import edu.wpi.cscore.UsbCamera;
 import edu.wpi.first.cameraserver.CameraServer;
-import edu.wpi.first.wpilibj.IterativeRobot;
-import edu.wpi.cscore.MjpegServer;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.Spark;
 import edu.wpi.first.wpilibj.SpeedControllerGroup;
@@ -41,7 +39,7 @@ public class Robot extends TimedRobot {
   private String m_autoSelected;
   private final SendableChooser<String> m_chooser = new SendableChooser<>();
 
-  
+
   int joystick_ = 0;
   Joystick joystick = new Joystick(joystick_);
   Spark m_RF = new Spark(3);
@@ -57,9 +55,7 @@ public class Robot extends TimedRobot {
   SpeedControllerGroup Drip = new SpeedControllerGroup(Left, Right);
 
   DifferentialDrive drive = new DifferentialDrive(Left, Right);
-
  
-
 
   /**
    * This function is run when the robot is first started up and should be
@@ -88,11 +84,15 @@ public class Robot extends TimedRobot {
           outputStream.putFrame(output);
         }
       }).start();
-    }
-    {
+    
        Right.setInverted(true);
+  
+
+
 
   }
+
+  
 
   /**
    * This function is called every robot packet, no matter the mode. Use
@@ -175,10 +175,15 @@ public class Robot extends TimedRobot {
   }
   while(joystick.getRawButtonPressed(6)){
     mServo.set(0.5);
+   
+
   }
   while(joystick.getRawButtonPressed(4)){
     mServo.set(0.1);
+  
   }
+
+ 
   
 
 }
