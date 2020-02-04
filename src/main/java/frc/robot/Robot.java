@@ -49,11 +49,11 @@ public class Robot extends TimedRobot {
 
   Servo mServo = new Servo(5);
 
-  SpeedControllerGroup right = new SpeedControllerGroup(m_RF, m_RR);
-  SpeedControllerGroup left = new SpeedControllerGroup(m_LF, m_LR);
-  SpeedControllerGroup drip = new SpeedControllerGroup(left, right);
+  SpeedControllerGroup Right = new SpeedControllerGroup(m_RF, m_RR);
+  SpeedControllerGroup Left = new SpeedControllerGroup(m_LF, m_LR);
+  SpeedControllerGroup Drip = new SpeedControllerGroup(Left, Right);
 
-  DifferentialDrive drive = new DifferentialDrive(left, right);
+  DifferentialDrive drive = new DifferentialDrive(Left, Right);
 
  
 
@@ -82,7 +82,7 @@ public class Robot extends TimedRobot {
         outputStream.putFrame(output);
       }
     });
-       right.setInverted(true);
+       Right.setInverted(true);
 
   }
 
@@ -114,7 +114,10 @@ public class Robot extends TimedRobot {
     m_autoSelected = m_chooser.getSelected();
     // m_autoSelected = SmartDashboard.getString("Auto Selector", kDefaultAuto);
     System.out.println("Auto selected: " + m_autoSelected);
- 
+
+    Timer timer = new Timer();
+    timer.reset();
+    timer.start();
   }
 
   /**
@@ -126,9 +129,10 @@ public class Robot extends TimedRobot {
       case kCustomAuto:
         // Put custom auto code here
       
-        drip.set(.5);
-        Timer.delay(500);
-        drip.set(0);
+        if(Timer.getMatchTime() <= 500) {
+          Drip.set(-.5);
+        }
+        Drip.set(0);
       
 
         
