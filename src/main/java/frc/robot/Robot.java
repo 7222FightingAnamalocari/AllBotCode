@@ -10,6 +10,7 @@ package frc.robot;
 import org.opencv.core.Mat;
 import org.opencv.imgproc.Imgproc;
 
+
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
@@ -66,23 +67,20 @@ public class Robot extends TimedRobot {
     m_chooser.setDefaultOption("Default Auto", kDefaultAuto);
     m_chooser.addOption("My Auto", kCustomAuto);
     SmartDashboard.putData("Auto choices", m_chooser);
-      new Thread(() -> {
-        UsbCamera camera = CameraServer.getInstance().startAutomaticCapture();
-        camera.setResolution(640, 480);
-  
-        CvSink cvSink = CameraServer.getInstance().getVideo();
-        CvSource outputStream = CameraServer.getInstance().putVideo("Cam0", 640, 480);
-  
-        Mat source = new Mat();
-        Mat output = new Mat();
-  
-        while(!Thread.interrupted()) {
-          if (cvSink.grabFrame(source) == 0) {
-            continue;
-          }
-          Imgproc.cvtColor(source, output, Imgproc.COLOR_BGR2GRAY);
-          outputStream.putFrame(output);
-        }
+    new Thread (() -> {
+      UsbCamera camera = CameraServer.getInstance().startAutomaticCapture();
+      camera.setResolution(320, 240);
+
+      CvSink cvSink = CameraServer.getInstance().getVideo();
+      CvSource outputStream = CameraServer.getInstance().putVideo("USB Camera 0", 320, 240);
+
+      Mat source = new Mat();
+      Mat output = new Mat();
+      while(!Thread.interrupted()) {
+        cvSink.grabFrame(source);
+        Imgproc.cvtColor(source, output, Imgproc.COLOR_BGR2GRAY);
+        outputStream.putFrame(output);
+      }
       }).start();
     
        Right.setInverted(true);
