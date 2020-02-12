@@ -7,15 +7,15 @@
 
 package frc.robot;
 
-import edu.wpi.cscore.CvSink;
-import edu.wpi.cscore.CvSource;
-import edu.wpi.cscore.UsbCamera;
 import edu.wpi.first.wpilibj.*;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import org.opencv.core.Mat;
-import org.opencv.imgproc.Imgproc;
+
+import java.util.Set;
+
+import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
+import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -33,18 +33,26 @@ public class Robot extends TimedRobot
 
     private Joystick stick = new Joystick(0);
 
-    private Spark arms = new Spark(0);
+    private Spark lIntake = new Spark(2);
+    private Spark rIntake = new Spark(1);
 
-    private Victor lBackV = new Victor(1);
-    private Talon lFrontT = new Talon(2);
-    private Talon rBackT = new Talon(3);
-    private Victor rFrontV = new Victor(4);
+    SpeedControllerGroup loader = new SpeedControllerGroup(lIntake, rIntake);
 
-    private SpeedControllerGroup leftG = new SpeedControllerGroup(lBackV, lFrontT);
-    private SpeedControllerGroup rightG = new SpeedControllerGroup(rBackT,rFrontV);
+    private Spark leftArm = new Spark(3);
+    private Spark rightArm = new Spark(0);
 
-    private DifferentialDrive drive = new DifferentialDrive(leftG,rightG);
+    private SpeedControllerGroup arms = new SpeedControllerGroup(leftArm, rightArm);
 
+    private WPI_VictorSPX lBackV = new WPI_VictorSPX(1);
+    private WPI_TalonSRX lFrontT = new WPI_TalonSRX(2);
+    private WPI_VictorSPX rFrontV = new WPI_VictorSPX(3);
+    private WPI_TalonSRX rBackT = new WPI_TalonSRX(4);
+    private WPI_TalonSRX intake = new WPI_TalonSRX(7);
+
+    SpeedControllerGroup leftG = new SpeedControllerGroup(lBackV, lFrontT);
+    SpeedControllerGroup rightG = new SpeedControllerGroup(rBackT, rFrontV);
+
+    DifferentialDrive drive = new DifferentialDrive(leftG, rightG);
     /**
      * This method is run when the robot is first started up and should be
      * used for any initialization code.
@@ -52,10 +60,17 @@ public class Robot extends TimedRobot
     @Override
     public void robotInit()
     {
-    chooser.setDefaultOption("Default Auto", DEFAULT_AUTO);
+        lFrontT.addChild(lBackV);
+        rFrontV.addChild(rBackT);
+        chooser.setDefaultOption("Default Auto", DEFAULT_AUTO);
         chooser.addOption("My Auto", CUSTOM_AUTO);
         SmartDashboard.putData("Auto choices", chooser);
+        
+        lIntake.setInverted(true);
 
+        SmartDashboard.putBoolean("Intake Runnung?",true);
+        //HashSet<String> keys = SmartDashboard.getKeys();
+        Set<String> keys = SmartDashboard.getKeys();
         /*
         new Thread(() -> {
             UsbCamera camera = CameraServer.getInstance().startAutomaticCapture();
@@ -86,8 +101,9 @@ public class Robot extends TimedRobot
      * LiveWindow and SmartDashboard integrated updating.
      */
     @Override
-    public void robotPeriodic()
-    {
+    public void robotPeriodic() {
+
+        SmartDashboard.updateValues();
     }
 
     /**
@@ -128,25 +144,60 @@ public class Robot extends TimedRobot
         }
     }
 
+    @Override
+    public void teleopInit() {
+        super.teleopInit();
+
+    }
+
     /**
      * This method is called periodically during operator control.
      */
+    public void runLoader() {
+        while(stick.getRawButtonPressed(2)) {
+            loader.set(-.3);
+        }
+        while(stick.getRawButtonReleased(2)) {
+            loader.set(0);
+        }
+    }
+
+    public void runIntake() {
+        while(stick.getRawButtonPressed(1)) {
+            intake.set(.5);
+        }
+        while(stick.getRawButtonReleased(1)) {
+            intake.set(0);
+        }
+    }
+
+    public void armsUp() {
+        arms.set(1);
+    }
+
+    public void armsDown() {
+        arms.set(-.5);
+    }
+
+    public void armControl() {
+        while(stick.getRawButtonPressed(5)) {
+            armsUp();
+        }
+        while(stick.getRawButtonPressed(3)) {
+            armsDown();
+        }
+        while(stick.getRawButtonReleased(3) || stick.getRawButtonReleased(5)) {
+            arms.set(0);
+        }
+    }
+
     @Override
     public void teleopPeriodic()
     {
-        new Thread(() -> {
-            if(stick.getRawButton(4) && !stick.getRawButton(2)) {
-                arms.set(.2);
-            } else {
-                arms.set(0);
-            }
-            if(stick.getRawButton(3)) {
-                arms.set(-.2);
-            } else {
-                arms.set(0);
-            }
-        }).start();
-        drive.arcadeDrive(stick.getY(),stick.getX());
+        runLoader();
+        runIntake();
+        armControl();
+        drive.arcadeDrive(stick.getY(), stick.getX());
     }
 
     /**
