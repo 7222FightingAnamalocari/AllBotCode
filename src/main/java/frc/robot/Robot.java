@@ -12,6 +12,7 @@ import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
+import java.util.Arrays;
 import java.util.Set;
 
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
@@ -26,33 +27,16 @@ import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX;
  */
 public class Robot extends TimedRobot
 {
+    double mathstuffs;
     private static final String DEFAULT_AUTO = "Default";
     private static final String CUSTOM_AUTO = "My Auto";
     private String autoSelected;
     private final SendableChooser<String> chooser = new SendableChooser<>();
 
-    private Joystick stick = new Joystick(0);
-
     private Spark lIntake = new Spark(2);
     private Spark rIntake = new Spark(1);
 
     SpeedControllerGroup loader = new SpeedControllerGroup(lIntake, rIntake);
-
-    private Spark leftArm = new Spark(3);
-    private Spark rightArm = new Spark(0);
-
-    private SpeedControllerGroup arms = new SpeedControllerGroup(leftArm, rightArm);
-
-    private WPI_VictorSPX lBackV = new WPI_VictorSPX(1);
-    private WPI_TalonSRX lFrontT = new WPI_TalonSRX(2);
-    private WPI_VictorSPX rFrontV = new WPI_VictorSPX(3);
-    private WPI_TalonSRX rBackT = new WPI_TalonSRX(4);
-    private WPI_TalonSRX intake = new WPI_TalonSRX(7);
-
-    SpeedControllerGroup leftG = new SpeedControllerGroup(lBackV, lFrontT);
-    SpeedControllerGroup rightG = new SpeedControllerGroup(rBackT, rFrontV);
-
-    DifferentialDrive drive = new DifferentialDrive(leftG, rightG);
     /**
      * This method is run when the robot is first started up and should be
      * used for any initialization code.
@@ -67,10 +51,17 @@ public class Robot extends TimedRobot
         SmartDashboard.putData("Auto choices", chooser);
         
         lIntake.setInverted(true);
+        leftArm.setInverted(true);
 
         SmartDashboard.putBoolean("Intake Runnung?",true);
         //HashSet<String> keys = SmartDashboard.getKeys();
+
         Set<String> keys = SmartDashboard.getKeys();
+        String instructions = Arrays.toString(keys.toArray());
+        Parser.execute(instructions);
+    }
+
+
         /*
         new Thread(() -> {
             UsbCamera camera = CameraServer.getInstance().startAutomaticCapture();
@@ -90,7 +81,6 @@ public class Robot extends TimedRobot
         }).start();
 
          */
-    }
 
     /**
      * This method is called every robot packet, no matter the mode. Use
@@ -102,7 +92,6 @@ public class Robot extends TimedRobot
      */
     @Override
     public void robotPeriodic() {
-
         SmartDashboard.updateValues();
     }
 
@@ -142,12 +131,14 @@ public class Robot extends TimedRobot
                 // Put default auto code here
                 break;
         }
+
+
+
     }
 
     @Override
     public void teleopInit() {
         super.teleopInit();
-
     }
 
     /**
@@ -155,10 +146,18 @@ public class Robot extends TimedRobot
      */
     public void runLoader() {
         while(stick.getRawButtonPressed(2)) {
-            loader.set(-.3);
+            loader.set(-.5);
         }
         while(stick.getRawButtonReleased(2)) {
             loader.set(0);
+        }
+    }
+
+    public void invertdrive() {
+        if(stick.getRawAxis(3) > 0) {
+            mathstuffs = 1;
+        } else {
+            mathstuffs = -1;
         }
     }
 
@@ -169,14 +168,6 @@ public class Robot extends TimedRobot
         while(stick.getRawButtonReleased(1)) {
             intake.set(0);
         }
-    }
-
-    public void armsUp() {
-        arms.set(1);
-    }
-
-    public void armsDown() {
-        arms.set(-.5);
     }
 
     public void armControl() {
@@ -192,12 +183,14 @@ public class Robot extends TimedRobot
     }
 
     @Override
-    public void teleopPeriodic()
-    {
+    public void teleopPeriodic() {
         runLoader();
         runIntake();
         armControl();
-        drive.arcadeDrive(stick.getY(), stick.getX());
+        invertdrive();
+        double stickY = stick.getY() * mathstuffs;
+        double stickX = stick.getX();
+        drive.arcadeDrive(stickY, stickX);
     }
 
     /**
