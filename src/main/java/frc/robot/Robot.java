@@ -14,7 +14,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 import java.util.Set;
 
-import com.ctre.phoenix.motorcontrol.FollowerType;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX;
 
@@ -27,7 +26,6 @@ import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX;
  */
 public class Robot extends TimedRobot
 {
-    double mathstuffs;
     private static final String DEFAULT_AUTO = "Default";
     private static final String CUSTOM_AUTO = "My Auto";
     private String autoSelected;
@@ -54,7 +52,7 @@ public class Robot extends TimedRobot
     SpeedControllerGroup leftG = new SpeedControllerGroup(lBackV, lFrontT);
     SpeedControllerGroup rightG = new SpeedControllerGroup(rBackT, rFrontV);
 
-    DifferentialDrive drive = new DifferentialDrive(rightG, leftG);
+    DifferentialDrive drive = new DifferentialDrive(leftG, rightG);
     /**
      * This method is run when the robot is first started up and should be
      * used for any initialization code.
@@ -69,7 +67,6 @@ public class Robot extends TimedRobot
         SmartDashboard.putData("Auto choices", chooser);
         
         lIntake.setInverted(true);
-        leftArm.setInverted(true);
 
         SmartDashboard.putBoolean("Intake Runnung?",true);
         //HashSet<String> keys = SmartDashboard.getKeys();
@@ -145,9 +142,6 @@ public class Robot extends TimedRobot
                 // Put default auto code here
                 break;
         }
-
-
-
     }
 
     @Override
@@ -161,19 +155,10 @@ public class Robot extends TimedRobot
      */
     public void runLoader() {
         while(stick.getRawButtonPressed(2)) {
-            loader.set(-.5);
+            loader.set(-.3);
         }
         while(stick.getRawButtonReleased(2)) {
             loader.set(0);
-        }
-    }
-
-    public void invertdrive() {
-        if(stick.getRawAxis(3) > 0) {
-            mathstuffs = 1;
-        } else {
-            mathstuffs = -1;
-
         }
     }
 
@@ -212,10 +197,7 @@ public class Robot extends TimedRobot
         runLoader();
         runIntake();
         armControl();
-        invertdrive();
-        double stickY = stick.getY() * mathstuffs;
-        double stickX = stick.getX();
-        drive.arcadeDrive(stickY, stickX);
+        drive.arcadeDrive(stick.getY(), stick.getX());
     }
 
     /**
