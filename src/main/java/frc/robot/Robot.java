@@ -7,17 +7,15 @@
 
 package frc.robot;
 
-import frc.robot.Submodules.*;
-
-import edu.wpi.first.wpilibj.*;
+import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.robot.Submodules.arms;
+import frc.robot.Submodules.driveTrain;
+import frc.robot.Submodules.loader;
 
 import java.util.Arrays;
 import java.util.Set;
-
-import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
-import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX;
 
 import static frc.robot.Submodules.driveTrain.lBackV;
 import static frc.robot.Submodules.driveTrain.rBackT;
