@@ -5,19 +5,31 @@ import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX;
 import edu.wpi.first.wpilibj.SpeedControllerGroup;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 
+import static frc.robot.Submodules.sticks.stick0.stick;
+
 public class driveTrain {
-    public WPI_VictorSPX lBackV = new WPI_VictorSPX(1);
-    public WPI_TalonSRX lFrontT = new WPI_TalonSRX(2);
-    public WPI_VictorSPX rFrontV = new WPI_VictorSPX(3);
-    public WPI_TalonSRX rBackT = new WPI_TalonSRX(4);
-    public WPI_TalonSRX intake = new WPI_TalonSRX(7);
+    public static WPI_VictorSPX lBackV = new WPI_VictorSPX(1);
+    public static WPI_TalonSRX lFrontT = new WPI_TalonSRX(2);
+    public static WPI_VictorSPX rFrontV = new WPI_VictorSPX(3);
+    public static WPI_TalonSRX rBackT = new WPI_TalonSRX(4);
 
-    SpeedControllerGroup leftG = new SpeedControllerGroup(lBackV, lFrontT);
-    SpeedControllerGroup rightG = new SpeedControllerGroup(rBackT, rFrontV);
+    public static SpeedControllerGroup leftG = new SpeedControllerGroup(lBackV, lFrontT);
+    public static SpeedControllerGroup rightG = new SpeedControllerGroup(rBackT, rFrontV);
 
-    DifferentialDrive dDrive = new DifferentialDrive(rightG, leftG);
+    public static DifferentialDrive dDrive = new DifferentialDrive(rightG, leftG);
 
-    public void drive() {
-        dDrive.arcadeDrive(sticks.stick0.getY(),sticks.stick0.getX());
+    static int mathstuffs = 1;
+
+    public static void invertdrive() {
+        if(stick.getRawAxis(3) > 0) {
+            mathstuffs = 1;
+        } else {
+            mathstuffs = -1;
+        }
+    }
+
+    public static void drive() {
+        invertdrive();
+        dDrive.arcadeDrive(sticks.stick0.getY()*mathstuffs,sticks.stick0.getX());
     }
 }

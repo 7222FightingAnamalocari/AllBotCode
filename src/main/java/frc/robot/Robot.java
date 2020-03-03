@@ -7,8 +7,9 @@
 
 package frc.robot;
 
+import frc.robot.Submodules.*;
+
 import edu.wpi.first.wpilibj.*;
-import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
@@ -17,6 +18,9 @@ import java.util.Set;
 
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX;
+
+import static frc.robot.Submodules.driveTrain.lBackV;
+import static frc.robot.Submodules.driveTrain.rBackT;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -33,10 +37,6 @@ public class Robot extends TimedRobot
     private String autoSelected;
     private final SendableChooser<String> chooser = new SendableChooser<>();
 
-    private Spark lIntake = new Spark(2);
-    private Spark rIntake = new Spark(1);
-
-    SpeedControllerGroup loader = new SpeedControllerGroup(lIntake, rIntake);
     /**
      * This method is run when the robot is first started up and should be
      * used for any initialization code.
@@ -44,14 +44,13 @@ public class Robot extends TimedRobot
     @Override
     public void robotInit()
     {
-        lFrontT.addChild(lBackV);
-        rFrontV.addChild(rBackT);
+        driveTrain.lFrontT.addChild(lBackV);
+        driveTrain.rFrontV.addChild(rBackT);
         chooser.setDefaultOption("Default Auto", DEFAULT_AUTO);
         chooser.addOption("My Auto", CUSTOM_AUTO);
         SmartDashboard.putData("Auto choices", chooser);
-        
-        lIntake.setInverted(true);
-        leftArm.setInverted(true);
+
+        arms.leftArm.setInverted(true);
 
         SmartDashboard.putBoolean("Intake Runnung?",true);
         //HashSet<String> keys = SmartDashboard.getKeys();
@@ -144,53 +143,13 @@ public class Robot extends TimedRobot
     /**
      * This method is called periodically during operator control.
      */
-    public void runLoader() {
-        while(stick.getRawButtonPressed(2)) {
-            loader.set(-.5);
-        }
-        while(stick.getRawButtonReleased(2)) {
-            loader.set(0);
-        }
-    }
-
-    public void invertdrive() {
-        if(stick.getRawAxis(3) > 0) {
-            mathstuffs = 1;
-        } else {
-            mathstuffs = -1;
-        }
-    }
-
-    public void runIntake() {
-        while(stick.getRawButtonPressed(1)) {
-            intake.set(.5);
-        }
-        while(stick.getRawButtonReleased(1)) {
-            intake.set(0);
-        }
-    }
-
-    public void armControl() {
-        while(stick.getRawButtonPressed(5)) {
-            armsUp();
-        }
-        while(stick.getRawButtonPressed(3)) {
-            armsDown();
-        }
-        while(stick.getRawButtonReleased(3) || stick.getRawButtonReleased(5)) {
-            arms.set(0);
-        }
-    }
 
     @Override
     public void teleopPeriodic() {
-        runLoader();
-        runIntake();
-        armControl();
-        invertdrive();
-        double stickY = stick.getY() * mathstuffs;
-        double stickX = stick.getX();
-        drive.arcadeDrive(stickY, stickX);
+        loader.runLoader();
+        arms.armControl();
+        driveTrain.invertdrive();
+        driveTrain.drive();
     }
 
     /**
