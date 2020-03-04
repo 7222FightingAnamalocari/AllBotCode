@@ -32,6 +32,7 @@ public class Robot extends TimedRobot
     double mathstuffs;
     private static final String DEFAULT_AUTO = "Default";
     private static final String CUSTOM_AUTO = "My Auto";
+    private static final String RIGHT_AUTO = "Turn Right";
     private String autoSelected;
     private final SendableChooser<String> chooser = new SendableChooser<>();
 
@@ -46,6 +47,7 @@ public class Robot extends TimedRobot
         driveTrain.rFrontV.addChild(rBackT);
         chooser.setDefaultOption("Default Auto", DEFAULT_AUTO);
         chooser.addOption("My Auto", CUSTOM_AUTO);
+        chooser.addOption("Turn Right", RIGHT_AUTO);
         SmartDashboard.putData("Auto choices", chooser);
 
         arms.leftArm.setInverted(true);
@@ -55,30 +57,8 @@ public class Robot extends TimedRobot
 
         Set<String> keys = SmartDashboard.getKeys();
         String instructions = Arrays.toString(keys.toArray());
-        Parser.execute(instructions);
+        //Parser.doAuton(instructions);
     }
-
-
-        /*
-        new Thread(() -> {
-            UsbCamera camera = CameraServer.getInstance().startAutomaticCapture();
-            camera.setResolution(640, 480);
-      
-            CvSink cvSink = CameraServer.getInstance().getVideo();
-            CvSource outputStream = CameraServer.getInstance().putVideo("cam0", 640, 480);
-      
-            Mat source = new Mat();
-            Mat output = new Mat();
-
-            while(!Thread.interrupted()) {
-                cvSink.grabFrame(source);
-                Imgproc.cvtColor(source, output, Imgproc.COLOR_BGR2GRAY);
-                outputStream.putFrame(output);
-            }
-        }).start();
-
-         */
-
     /**
      * This method is called every robot packet, no matter the mode. Use
      * this for items like diagnostics that you want ran during disabled,
@@ -121,11 +101,21 @@ public class Robot extends TimedRobot
         switch (autoSelected)
         {
             case CUSTOM_AUTO:
-                // Put custom auto code here
+                Auton.turnLeft();
+                Auton.straight(1);
+                Auton.turnLeft();
+                Auton.straight(1);
+                Auton.turnLeft();
+                Auton.straight(1);
+                Auton.turnLeft();
+                Auton.straight(1);
                 break;
             case DEFAULT_AUTO:
             default:
-                // Put default auto code here
+                Auton.straight(1);
+                break;
+            case RIGHT_AUTO:
+                Auton.turnRight();
                 break;
         }
 
@@ -145,9 +135,9 @@ public class Robot extends TimedRobot
     @Override
     public void teleopPeriodic() {
         loader.runLoader();
-        arms.armControl();
-        driveTrain.invertdrive();
+        //arms.armControl();
         driveTrain.drive();
+        frc.robot.Submodules.climb.lift();
     }
 
     /**

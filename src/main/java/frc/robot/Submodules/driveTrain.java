@@ -20,16 +20,16 @@ public class driveTrain {
 
     static int mathstuffs = 1;
 
-    public static void invertdrive() {
+    /*public static void invertdrive() {
         if(stick.getRawAxis(3) > 0) {
             mathstuffs = 1;
         } else {
             mathstuffs = -1;
         }
-    }
+    }*/
 
     public static void drive() {
-        invertdrive();
+        //invertdrive();
         dDrive.arcadeDrive(sticks.stick0.getY()*mathstuffs,sticks.stick0.getX());
     }
 }

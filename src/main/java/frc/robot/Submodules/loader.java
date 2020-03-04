@@ -11,10 +11,13 @@ public class loader {
     static SpeedControllerGroup loader = new SpeedControllerGroup(lIntake, rIntake);
 
     public static void runLoader() {
-        while(sticks.stick0.getRawButtonPressed(1)) {
+        while(sticks.stick1.getRawButtonPressed(8)) {
             loader.set(.5);
         }
-        while(sticks.stick0.getRawButtonReleased(1)) {
+        while(sticks.stick1.getRawButtonPressed(7)) {
+            loader.set(-.5);
+        }
+        while(sticks.stick1.getRawButtonReleased(7) || sticks.stick1.getRawButtonReleased(8)) {
             loader.set(0);
         }
     }
