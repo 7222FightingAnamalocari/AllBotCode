@@ -1,6 +1,5 @@
 package frc.robot.Submodules;
 
-import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 import edu.wpi.first.wpilibj.Spark;
 import edu.wpi.first.wpilibj.SpeedControllerGroup;
 
@@ -11,11 +10,12 @@ public class loader {
     static SpeedControllerGroup loader = new SpeedControllerGroup(lIntake, rIntake);
 
     public static void runLoader() {
+        lIntake.setInverted(true);
         while(sticks.stick1.getRawButtonPressed(8)) {
-            loader.set(.5);
+            loader.set(-.5);
         }
         while(sticks.stick1.getRawButtonPressed(7)) {
-            loader.set(-.5);
+            loader.set(.5);
         }
         while(sticks.stick1.getRawButtonReleased(7) || sticks.stick1.getRawButtonReleased(8)) {
             loader.set(0);

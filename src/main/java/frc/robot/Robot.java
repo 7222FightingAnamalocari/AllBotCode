@@ -14,101 +14,60 @@ import frc.robot.Submodules.arms;
 import frc.robot.Submodules.driveTrain;
 import frc.robot.Submodules.loader;
 
-import java.util.Arrays;
-import java.util.Set;
+import static frc.robot.Submodules.driveTrain.*;
 
-import static frc.robot.Submodules.driveTrain.lBackV;
-import static frc.robot.Submodules.driveTrain.rBackT;
-
-/**
- * The VM is configured to automatically run this class, and to call the
- * methods corresponding to each mode, as described in the TimedRobot
- * documentation. If you change the name of this class or the package after
- * creating this project, you must also update the build.gradle file in the
- * project.
- */
 public class Robot extends TimedRobot
 {
-    double mathstuffs;
     private static final String DEFAULT_AUTO = "Default";
     private static final String CUSTOM_AUTO = "My Auto";
     private static final String RIGHT_AUTO = "Turn Right";
+    private static final String TEST_AUTON = "Forward";
     private String autoSelected;
     private final SendableChooser<String> chooser = new SendableChooser<>();
 
-    /**
-     * This method is run when the robot is first started up and should be
-     * used for any initialization code.
-     */
+    public static boolean inTeleop = false;
+
     @Override
-    public void robotInit()
-    {
+    public void robotInit() {
         driveTrain.lFrontT.addChild(lBackV);
         driveTrain.rFrontV.addChild(rBackT);
         chooser.setDefaultOption("Default Auto", DEFAULT_AUTO);
         chooser.addOption("My Auto", CUSTOM_AUTO);
         chooser.addOption("Turn Right", RIGHT_AUTO);
+        chooser.addOption("Forward", TEST_AUTON);
         SmartDashboard.putData("Auto choices", chooser);
 
         arms.leftArm.setInverted(true);
-
-        SmartDashboard.putBoolean("Intake Runnung?",true);
         //HashSet<String> keys = SmartDashboard.getKeys();
 
-        Set<String> keys = SmartDashboard.getKeys();
-        String instructions = Arrays.toString(keys.toArray());
+        //Set<String> keys = SmartDashboard.getKeys();
+        //String instructions = Arrays.toString(keys.toArray());
         //Parser.doAuton(instructions);
     }
-    /**
-     * This method is called every robot packet, no matter the mode. Use
-     * this for items like diagnostics that you want ran during disabled,
-     * autonomous, teleoperated and test.
-     * <p>
-     * This runs after the mode specific periodic methods, but before
-     * LiveWindow and SmartDashboard integrated updating.
-     */
+
     @Override
     public void robotPeriodic() {
         SmartDashboard.updateValues();
     }
 
-    /**
-     * This autonomous (along with the chooser code above) shows how to select
-     * between different autonomous modes using the dashboard. The sendable
-     * chooser code works with the Java SmartDashboard. If you prefer the
-     * LabVIEW Dashboard, remove all of the chooser code and uncomment the
-     * getString line to get the auto name from the text box below the Gyro
-     * <p>
-     * You can add additional auto modes by adding additional comparisons to
-     * the switch structure below with additional strings. If using the
-     * SendableChooser make sure to add them to the chooser code above as well.
-     */
     @Override
-    public void autonomousInit()
-    {
+    public void autonomousInit() {
+        Auton.timer.start();
         autoSelected = chooser.getSelected();
         // autoSelected = SmartDashboard.getString("Auto Selector",
         // defaultAuto);
         System.out.println("Auto selected: " + autoSelected);
     }
 
-    /**
-     * This method is called periodically during autonomous.
-     */
     @Override
-    public void autonomousPeriodic()
-    {
-        switch (autoSelected)
-        {
+    public void autonomousPeriodic() {
+        if(Auton.timer.get() < 5) {
+            driveTrain.setDrive(.2,.2);
+        } else {
+            driveTrain.halt();
+        }
+        /*switch (autoSelected) {
             case CUSTOM_AUTO:
-                Auton.turnLeft();
-                Auton.straight(1);
-                Auton.turnLeft();
-                Auton.straight(1);
-                Auton.turnLeft();
-                Auton.straight(1);
-                Auton.turnLeft();
-                Auton.straight(1);
                 break;
             case DEFAULT_AUTO:
             default:
@@ -117,34 +76,30 @@ public class Robot extends TimedRobot
             case RIGHT_AUTO:
                 Auton.turnRight();
                 break;
-        }
+            case TEST_AUTON:
+                Auton.straight(1);
+                break;
+        }*/
+    }
 
-
-
+    @Override
+    public void disabledInit() {
+        super.disabledInit();
+        inTeleop=false;
     }
 
     @Override
     public void teleopInit() {
-        super.teleopInit();
+        teleopPeriodic();
+        inTeleop = true;
+        driveTrain.setDrive(0,0);
+        Auton.timer.stop();
     }
-
-    /**
-     * This method is called periodically during operator control.
-     */
 
     @Override
     public void teleopPeriodic() {
         loader.runLoader();
-        //arms.armControl();
-        driveTrain.drive();
         frc.robot.Submodules.climb.lift();
-    }
-
-    /**
-     * This method is called periodically during test mode.
-     */
-    @Override
-    public void testPeriodic()
-    {
+        driveTrain.drive();
     }
 }
